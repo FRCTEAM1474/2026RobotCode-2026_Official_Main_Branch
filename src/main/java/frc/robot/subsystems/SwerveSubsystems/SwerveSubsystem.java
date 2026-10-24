@@ -31,6 +31,7 @@ private final Field2d field2d = new Field2d();
    public SwerveSubsystem(File directory)
   { 
     SmartDashboard.putData("Field", field2d);
+    
     boolean blueAlliance = false;
     Pose2d startingPose = blueAlliance ? new Pose2d(new Translation2d(Meter.of(1),
                                                                       Meter.of(4)),
@@ -38,7 +39,7 @@ private final Field2d field2d = new Field2d();
                                        : new Pose2d(new Translation2d(Meter.of(16),
                                                                       Meter.of(4)),
                                                     Rotation2d.fromDegrees(180));
-    SwerveDriveTelemetry.verbosity = TelemetryVerbosity.HIGH;
+    SwerveDriveTelemetry.verbosity = TelemetryVerbosity.LOW;
     //IMPORTANT: MUST SWITCH THIS TO LOW FOR COMPETITION OR BANDWIDTH WILL BE COOKED BY TELEMETRY
     try
     {

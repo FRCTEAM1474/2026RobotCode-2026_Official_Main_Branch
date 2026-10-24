@@ -131,6 +131,8 @@ private void updateVisionLogic() {
         edu.wpi.first.networktables.NetworkTableInstance.getDefault().getTable("limelight").getEntry("fiducial_id_filters_set").setDoubleArray(LimelightIDs);
 
     if (m_autonomousCommand != null) { m_autonomousCommand.schedule(); }
+
+    m_robotContainer.getFixedTriggerShootRoutine().schedule();
   }
 
   @Override

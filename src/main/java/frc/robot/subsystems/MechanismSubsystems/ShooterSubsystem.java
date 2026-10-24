@@ -25,7 +25,7 @@ public class ShooterSubsystem extends SubsystemBase {
 	private static final int hood_limit_switch_port = 1;
 	private static final double hood_HOMIMG_SPEED = -0.2; 
     private static final double HOOD_BOTTOMING_SPEED = -0.05; 
-    private static final double HOOD_MAX_TRAVEL_ROTATIONS = 57.0;
+    private static final double HOOD_MAX_TRAVEL_ROTATIONS = 30.0;
     // Hardware For Shooter Subsystem
     private final SparkMax rightFlywheel = new SparkMax(right_flywheel_id, MotorType.kBrushless);
     private final SparkMax leftFlywheel = new SparkMax(left_flywheel_id, MotorType.kBrushless);
@@ -49,8 +49,8 @@ public class ShooterSubsystem extends SubsystemBase {
 		configureMotors();
 		powerMap.clear();
 		//Initialize Motor Power Map
-        powerMap.put(1.7, 0.7); 
-        powerMap.put(2.25, 0.85); 
+        powerMap.put(1.0, 1.0); 
+        powerMap.put(2.0, 1.0); 
         powerMap.put(3.0, 1.0);
         
         startHoming();

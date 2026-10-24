@@ -67,7 +67,7 @@ public class RobotContainer {
         drivebase.setupPathPlanner();
 
         // 2. Register Named Commands
-        NamedCommands.registerCommand("FixedShooter", fixedTriggerShootRoutine);
+        NamedCommands.registerCommand("FixedShooter", doNothingCommand);
 
         // 3. Build the Auto Chooser
         autoChooser = AutoBuilder.buildAutoChooser();
@@ -78,15 +78,29 @@ public class RobotContainer {
         DriverStation.silenceJoystickConnectionWarning(true);
 
     }
-       
-private final Command fixedTriggerShootRoutine =
+
+public final Command doNothingCommand = Commands.runOnce(() -> {});
+
+private final Command TriggerShootRoutine =
      Commands.parallel(
      Commands.run(() -> shooter.setDynamicShooter(visionSwerveSystem.getDistanceToHubMeters()), shooter),
         new SnapToTagCommand(drivebase, visionSwerveSystem).withTimeout(0.75).asProxy(), indexer.feedToShooterCommand(), floor.fixedIntake()
     );
         
      private final Command passingTriggerShootRoutine = Commands.parallel(indexer.feedToShooterCommand(), floor.fixedIntake(), shooter.passingShooter());
-         
+         private final Command fixedTriggerShootRoutine =
+    Commands.sequence(
+        // 1. Wait for 3 seconds to give your autonomous path time to finish
+        Commands.waitSeconds(3.0),
+        
+        // 2. Run your original shooting routine
+        Commands.parallel(
+            Commands.run(() -> shooter.setDynamicShooter(visionSwerveSystem.getDistanceToHubMeters()), shooter),
+            new SnapToTagCommand(drivebase, visionSwerveSystem).withTimeout(0.75).asProxy(), 
+            indexer.feedToShooterCommand(), 
+            floor.fixedIntake()
+        )
+    );
 private final Command fixedStopShootRoutine = Commands.parallel(
         Commands.runOnce(() -> indexer.stop(), indexer), 
         Commands.runOnce(() -> floor.stopIntake(), floor),
@@ -94,7 +108,9 @@ private final Command fixedStopShootRoutine = Commands.parallel(
         Commands.runOnce(() -> intake.stopRollers(), intake)
     );
 
-
+public Command getFixedTriggerShootRoutine() {
+    return fixedTriggerShootRoutine;
+}
     
 
 
@@ -105,7 +121,7 @@ private final Command fixedStopShootRoutine = Commands.parallel(
     private void configureBindings() {
             //SIMPLE FINAL BINDINGS PROBABLY
         driverXbox.leftTrigger().onTrue(deployandIntakeCommand);
-        driverXbox.rightTrigger().onTrue(fixedTriggerShootRoutine);
+        driverXbox.rightTrigger().onTrue(TriggerShootRoutine);
         
 
 
@@ -115,10 +131,12 @@ private final Command fixedStopShootRoutine = Commands.parallel(
         drivebase.setDefaultCommand(drivebase.driveFieldOriented(driveAngularVelocity));
         driverXbox.x().onTrue(Commands.runOnce(() -> {
             var alliance = DriverStation.getAlliance();
-            double resetAngle = (alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red) ? 0.0 : 180.0;
+            double resetAngle = (alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red) ? 180.0 : 0.0;
             
             // Get the robot's CURRENT position so we don't teleport it to the hub!
             Pose2d currentPose = drivebase.getPose(); // (Use whatever method your swerve uses to get current pose)
+            // Zero the gyro first (Code that could fix problems with gyro drift or misalignment)
+            // drivebase.zeroGyro();
             
             // Reset the odometry with the CURRENT X/Y, but the NEW zeroed angle
             drivebase.resetOdometry(new Pose2d(
